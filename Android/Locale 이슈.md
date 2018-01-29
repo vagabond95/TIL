@@ -1,5 +1,6 @@
-## Locale 값 이슈  
-디바이스에서 현재 사용하고 있는 Language 정보를 가져오기 위해 Locale 값을 이용할 때가 있다.  
+# Locale 값 이슈  
+### what  
+디바이스에서 현재 사용하고 있는 Language 정보를 가져오기 위해 Locale 값을 이용할 때가 있다.  
 그때 보통 일반적인 솔루션이  
 ~~~java
 Locale.getDefault()
