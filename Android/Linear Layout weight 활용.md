@@ -1,0 +1,4 @@
+## 안드로이드 Linear Layout Weight 의 올바른 사용법  
+일반적으로 안드로이드에서 특정 값을 입력해서 크기를 지정할 경우 해상도가 다를 경우 조금씩 다른 배치를 이루고 있는 경우가 많다. 따라서 일반적으로 wrap_content, match_parent 등을 이용하게 된다. 문제는 match_parent 를 이용하고 있을 때 발생하게 되는데, height 속성을 **match_parent** 로 지정할 경우 해당 뷰 외에는 아무리 다른뷰를 추가해도 레이아웃에서 보이지 않는다. 그리고 이런상황은 생각보다 자주 발생한다. 예를들어 하나의 레이아웃에 header, recyclerview, footer를 넣는 경우.  
+#### Soulution  
+이러한 상황에서 weight 를 활용해볼 수 있다. weight 의 값의 정의는 '기본적으로 크기가 정해진 후 남는 공간을 일정 비율만큼 차지하는 것' 이다. 즉, header / footer 를 특정 크기만큼 지정한 후 recycler view 를 **weight = 1** 으로 세팅해주면 남는 공간에 꽉차게 보이고 우리가 원하는 뷰를 얻을 수 있다. 아, 다만 해당 속성은 LinearLayout 에서만 먹힌다.
