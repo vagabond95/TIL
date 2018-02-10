@@ -12,7 +12,7 @@ Locale.getDefault()
   
 ### Soulution
 ~~~java
-Locale current = contextgetResources().getConfiguration().locale;
+Locale current = context.getResources().getConfiguration().locale;
 ~~~
 위 방법을 사용하면 중간에 Language 가 변경되었더라도 값을 올바르게 가져오게된다.  
 [StackOverflow](https://stackoverflow.com/questions/14389349/android-get-current-locale-not-default)
