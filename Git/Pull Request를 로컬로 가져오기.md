@@ -3,7 +3,7 @@ PR 리뷰를 하다보면 테스트를 위해 코드를 직접 돌려봐야할 �
   
 PR번호는 GitHub 기준으로 다음과 같이 PR title 옆에 '#번호' 형태로 표기되어 쉽게 확인할 수 있다.  
   
-<img src="./Image/git_pr_number.png" width="30%">
+![pr_number](./Image/git_pr_number.png)
   
 그럼 'origin' 원격 저장소에서 번호가 '80'인 PR을 'pr-test80' 브랜치로 가져오는 작업을 수행해보자.  
   
