@@ -1,10 +1,10 @@
 language: python - "2.7"
 
 install:
-    - sudo pip install -U -r requirements.txt
+    - pip install --user travis-sphinx
 
 script:
-    - travis-sphinx build -s . --nowarn
-    
+    - travis-sphinx build
+
 after_success:
     - travis-sphinx deploy
