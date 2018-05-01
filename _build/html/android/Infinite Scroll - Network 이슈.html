@@ -1,0 +1,145 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Recycler View - Infinite 스크롤 구현시 발생한 네트워크 이슈 &#8212; TIL 1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="recycler-view-infinite">
+<span id="recycler-view-infinite"></span><h1>Recycler View - Infinite 스크롤 구현시 발생한 네트워크 이슈<a class="headerlink" href="#recycler-view-infinite" title="Permalink to this headline">¶</a></h1>
+<p>일반적으로 infinite 스크롤 작동방식은 다음과 같다.</p>
+<ol class="simple">
+<li>스크롤이 Recycler view 최하단에 위치했을 때 이벤트를 캐치한다.</li>
+<li>해당 이벤트 발생시 API 를 이용하여 새로운 데이터를 가져온다.</li>
+<li>가져온 데이터를 Adapter에 Update 시켜준다.</li>
+</ol>
+<div class="section" id="problem">
+<span id="problem"></span><h2>Problem<a class="headerlink" href="#problem" title="Permalink to this headline">¶</a></h2>
+<p>위 과정을 머리에 그리고 별 어려움 없이 구현을 마쳤다. 그런데 테스트 과정에서 스크롤하여 새로운 데이터를 로딩했을 때, 간혹 순서에 맞지 않는 녀석들이 있다는 제보를 받았다. API 콜을 날려보니 서버에서는 날짜 기준으로 잘 정렬하어 보내주고 있었다. 결국 안드로이드 구현문제! 더 당황스러운건 위 현상이 랜덤하게 발생하여 재현조건을 알 수 없다는 것이었다.</p>
+</div>
+<div class="section" id="think">
+<span id="think"></span><h2>Think<a class="headerlink" href="#think" title="Permalink to this headline">¶</a></h2>
+<p>다시 Infinite 스크롤 작동 과정중 <strong>‘해당 이벤트 발생시 API 를 이용하여 새로운 데이터를 가져온다.’</strong> 단계를 좀 더 자세히 살펴보면 항상 같은방식으로 동작하는 것이 아니라 상황에 따라 나뉘어 Best case 와 worst case 로 동작할 수 있음을 알 수 있다.</p>
+<p><strong>Best Case</strong>(<strong>서브 스레드</strong> : API 콜 –&gt; Response 성공! –&gt; <strong>UI 스레드</strong> : Adapater 업데이트)</p>
+<p><strong>Worst Case</strong>
+(<strong>서브 스레드1</strong> : 첫번째 API 콜) –&gt; (<strong>UI 스레드</strong> : 첫번째 API 콜에 대한 응답이 도착하기 전에 다시 최하단 스크롤 이벤트가 발생) –&gt; (<strong>서브스레드2</strong> : 두번째 API 콜) –&gt; ??? (결과 예측 불가)</p>
+<p>처음에 본인은 동기적인 사고방식을 통해 <strong>스크롤 이벤트로 인한 최초의 API 콜</strong>만 고려하여 항상 Best case 방식대로 동작한다고 생각했다.하지만 네트워크 작업은 비동기 처리를 하기 때문에 다음과 같은 특수성을 고려해야 했다.</p>
+<ol class="simple">
+<li>API 콜이 불린 순간부터 API 결과에 대한 처리는 <strong>서브스레드</strong>에서,  API 콜을 부를 수 있는 이벤트는 <strong>UI 스레드</strong>에서 동작하기 때문에 이전에 API 콜이 불리고 결과가 돌아오기 전에 언제든 다시 새로운 API 콜을 부를 수 있다.</li>
+<li>차례대로 API를 두 번 호출한다고 했을 때 먼저 호출한 API 결과가 항상 먼저 도착한다고 장담할 수 없다.</li>
+<li>API 결과가 도착하는 순서는 장담할 수 없지만, API 콜을 호출한 순서대로 정렬된 데이터를 가져오기 때문에 늦게 때린 API 결과가 먼저 반영될 경우 사용자 입장에서는 순서가 뒤죽박죽으로 보일 수 있다.</li>
+</ol>
+<p>위 특수성을 깨닫고나니 테스트과정에서 나타난 현상을 이해할 수 있었다.</p>
+<p><strong>본인이 원했던 과정</strong> =  최하단 부분에서 스크롤을 할때마다 API 콜이 순차적으로 응답하여 최초 데이터 -&gt; 데이터 1 -&gt; 데이터 2 -&gt; … 순으로 나오는 것<strong>실제 과정</strong> = 데이터1 을 요청하는 API콜 1 -&gt; (API 콜 1의 응답이 오기전에) 데이터2 를 요청하는 API 콜 2 -&gt; API 콜 2의 응답 도착 -&gt; API 콜 1의 응답최종 : 최초 데이터 - 데이터 2 - 데이터 1 순으로 보이게 됨.</p>
+</div>
+<div class="section" id="solution">
+<span id="solution"></span><h2>Solution<a class="headerlink" href="#solution" title="Permalink to this headline">¶</a></h2>
+<p>위와 같은 상황을 어떻게 해결할 수 있을까?
+최초 API 콜의 응답이 끝나지 않았는데 계속해서 API 콜을 호출할 수 있는 것이 문제였으므로 이를 막아버리면 ok. 본인은 Flag로 <strong>Lock</strong>을 걸어버리는 방법을 썼다.</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="c1">//맴버 변수</span>
+<span class="kd">private</span> <span class="kt">boolean</span> <span class="n">dataLoading</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">fetchData</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(!</span><span class="n">dataLoading</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">dataLoading</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+      <span class="c1">//================</span>
+      <span class="c1">//Network 처리...</span>
+      <span class="c1">//================</span>
+
+      <span class="c1">//Network 처리가 끝난 후</span>
+      <span class="n">dataLoading</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+</pre></div>
+</div>
+<p>위와 같이 처리하면 최초 API 콜의 결과가 오기전까지는 최하단 스크롤 이벤트가 발생하여 요청한 API 가 모두 무시된다. &nbsp;
+OS에서 기본적으로 배우는 내용이 Lock, 세마포어 기법이었는데 막상 실전에서 코딩 할때는 전혀 떠오르지 않았다.. 네트워킹 작업을 할때는 순서가 보장되지 않는다는 것, 비동기!!!! 특성을 좀 더 이해하고 코딩하는 자세를 길러야겠다.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Recycler View - Infinite 스크롤 구현시 발생한 네트워크 이슈</a><ul>
+<li><a class="reference internal" href="#problem">Problem</a></li>
+<li><a class="reference internal" href="#think">Think</a></li>
+<li><a class="reference internal" href="#solution">Solution</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/android/Infinite Scroll - Network 이슈.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Jihoon Kim.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/android/Infinite Scroll - Network 이슈.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,128 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Throttle, Debounce 개념 &#8212; TIL 1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="throttle-debounce">
+<span id="throttle-debounce"></span><h1>Throttle, Debounce 개념<a class="headerlink" href="#throttle-debounce" title="Permalink to this headline">¶</a></h1>
+<p>Rx Java를 사용하다가 접한 개념인데, 리서치를 해보니 다양한 필드에서 사용되는듯 하다. (예제는 웹쪽이 압도적으로 많았다.)</p>
+<div class="section" id="">
+<span id="id1"></span><h2>들어가기전에<a class="headerlink" href="#" title="Permalink to this headline">¶</a></h2>
+<p>어떤 기술의 핵심을 이해하는데 가장 좋은 방법은 해당 기술이 나온 이유를 먼저 아는것.</p>
+<p>스크롤을 이벤트가 발생할때 마다 호출되는 콜백이 있다고 가정해보자. 우리는 크게 느끼지 못하지만 스크롤을 살짝 드르륵하기만 해도 수많은 스크롤 이벤트가 발생한다. 만약 각 스크롤 이벤트마다 콜백이 발생한다면? 그리고 그 콜백이 수행하는 일이 큰 리소스를 차지하는 작업이라면? 별로 생각하고 싶지않은 케이스다. Throttle 과 Debounce 는 이렇게 이벤트가 과도한 횟수로 발생하는 것에 제약을 걸어 제어할 수 있는 수준으로 이벤트를 발생시키는 것을 목표로 한다.</p>
+</div>
+<div class="section" id="throttle">
+<span id="throttle"></span><h2>Throttle<a class="headerlink" href="#throttle" title="Permalink to this headline">¶</a></h2>
+<p>이벤트를 <strong>일정한 주기마다 발생</strong>하도록 하는 기술이다. 예를 들어 Throttle 의 설정시간으로 1 ms 를 주게되면 해당 이벤트는 1ms 동안 최대 한번만 발생하게 된다. 위의 Throttle 기법이 적용될 경우 다음과 같이 작동하게 된다.</p>
+<p>설정시간 = 1ms</p>
+<p><strong>일반</strong> : 이벤트1 이벤트2 이벤트3 이벤트4 이벤트5&nbsp;이벤트6… (이벤트 발생에 제약이 없다.)
+<strong>Throttle 예제</strong> : 이벤트1 [..1ms..] 이벤트2 [..1ms..] 이벤트3 [..1ms..] 이벤트4</p>
+</div>
+<div class="section" id="debounce">
+<span id="debounce"></span><h2>Debounce<a class="headerlink" href="#debounce" title="Permalink to this headline">¶</a></h2>
+<p>이벤트를 그룹화하여 <strong>특정시간이 지난 후 하나의 이벤트만 발생</strong>하도록 하는 기술이다. 말이 어려우므로 바로 예시를 통해 이해해보자.</p>
+<p>설정시간 = 5ms</p>
+<p><strong>일반</strong> : 이벤트이벤트이벤트이벤트이벤트<strong>Debounce 예제 1</strong> : 이벤트1 이벤트2 이벤트3 [..5ms..] ==&gt; <strong>이벤트3</strong>발생!<strong>Debounce 예제 2</strong> : 이벤트1 이벤트2 이벤트3 [..4.9ms..] 이벤트4 이벤트5 이벤트6 [..5ms..] ==&gt; <strong>이벤트6</strong>발생!</p>
+<p>Throttle과 차이를 알겠는가? Debounce는 아무리 많은 이벤트가 발생해도 모두 무시하고 특정 시간사이에 어떤 이벤트도 발생하지 않았을 때 딱 한번만 마지막 이벤트를 발생시키는 기법이다. 따라서 5ms 가 지나기전에 계속 이벤트가 발생할 경우 콜백에 반응하는 이벤트는 발생하지 않고 계속 무시된다. 예제 2에서는 실제로 6개의 이벤트가 발생했음에도 불구하고 실제로 콜백이 반응하는 이벤트는 ‘<strong>이벤트 6</strong>’ 단 하나뿐이다.</p>
+<p>본인의 경우 검색기능을 구현할 때 Debounce가 유용하게 사용되었다.</p>
+<p>EditText 에서 내용이 바뀔때마다 해당 내용을 검색하는 API 를 날린다고 생각해보자. ‘자바’를 검색한다고 했을 때 아무런 처리도 하지않을 경우 EditText 리스너는 (ㅈ), (자), (자ㅂ), (자바) 총 4번의 API를 날릴 것이다. 그런데 사실 사용자가 검색하여 얻고싶은 내용은 ‘자바’이므로 입력 과정에서 만들어지는 글자의 검색결과는 보여주지 않아도 되었다. 또한 매번 입력과정에서 만들어지는 글자의 검색결과를 그려주는 리소스낭비도 있었다.    &nbsp;
+&nbsp;
+위와 같은 상황에서 Debounce (300ms)을 적용하여 다음과 같이 동작하도록 했다.</p>
+<p><strong>Debounce 예제 3</strong> :’ㅈ’ [..210ms..] ‘자’ [..250ms..] ‘자ㅂ’ [..240ms..] ‘자바’ [..300ms..] &nbsp;
+–&gt; <strong>‘자바’라는 내용으로 한번만 검색 API 를 호출!</strong></p>
+</div>
+<div class="section" id="">
+<span id="id2"></span><h2>마치며<a class="headerlink" href="#" title="Permalink to this headline">¶</a></h2>
+<p>한번만 제대로 이해한다면 그리 어려운 개념은 아니라고 생각한다. 중요한 점은 Throttle / Debounce 를 적용시킬때 설정시간을 현명하게 선택해야 한다는 것이다. 시간을 너무 짧게 잡을경우 사용하는 의미가 없어지고 너무 길게 잡을경우 화면이 멈추거나 렉이 걸린것 같은 효과를 주어 사용자에게 나쁜 경험을 줄 수 있기 때문이다. 개인적으로는 200ms ~ 300ms 정도가 경험도 나쁘지 않으면서 성능개선효과도 얻을 수 있는 시간이라고 느꼈다.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Throttle, Debounce 개념</a><ul>
+<li><a class="reference internal" href="#">들어가기전에</a></li>
+<li><a class="reference internal" href="#throttle">Throttle</a></li>
+<li><a class="reference internal" href="#debounce">Debounce</a></li>
+<li><a class="reference internal" href="#">마치며</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/android/Throttle, Debounce 개념.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Jihoon Kim.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/android/Throttle, Debounce 개념.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

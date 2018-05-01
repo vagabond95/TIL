@@ -1,0 +1,100 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>안드로이드 Linear Layout Weight 의 올바른 사용법 &#8212; TIL 1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="linear-layout-weight">
+<span id="linear-layout-weight"></span><h1>안드로이드 Linear Layout Weight 의 올바른 사용법<a class="headerlink" href="#linear-layout-weight" title="Permalink to this headline">¶</a></h1>
+<p>일반적으로 안드로이드에서 특정 값을 입력해서 크기를 지정할 경우 해상도가 다를 경우 조금씩 다른 배치를 이루고 있는 경우가 많다. 따라서 일반적으로 wrap_content, match_parent 등을 이용하게 된다. 문제는 match_parent 를 이용하고 있을 때 발생하게 되는데, height 속성을 <strong>match_parent</strong> 로 지정할 경우 해당 뷰 외에는 아무리 다른뷰를 추가해도 레이아웃에서 보이지 않는다. 그리고 이런상황은 생각보다 자주 발생한다. 예를들어 하나의 레이아웃에 header, recyclerview, footer를 넣는 경우.</p>
+<div class="section" id="soulution">
+<span id="soulution"></span><h2>Soulution<a class="headerlink" href="#soulution" title="Permalink to this headline">¶</a></h2>
+<p>이러한 상황에서 weight 를 활용해볼 수 있다. weight 의 값의 정의는 ‘기본적으로 크기가 정해진 후 남는 공간을 일정 비율만큼 차지하는 것’ 이다. 즉, header / footer 를 특정 크기만큼 지정한 후 recycler view 를 <strong>weight = 1</strong> 으로 세팅해주면 남는 공간에 꽉차게 보이고 우리가 원하는 뷰를 얻을 수 있다. 아, 다만 해당 속성은 LinearLayout 에서만 먹힌다.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">안드로이드 Linear Layout Weight 의 올바른 사용법</a><ul>
+<li><a class="reference internal" href="#soulution">Soulution</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/android/Linear Layout weight 활용.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Jihoon Kim.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/android/Linear Layout weight 활용.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

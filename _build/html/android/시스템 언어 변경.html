@@ -1,0 +1,170 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>동적으로 시스템 언어 바꾸기 / Locale 설정 &#8212; TIL 1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="locale">
+<span id="locale"></span><h1>동적으로 시스템 언어 바꾸기 / Locale 설정<a class="headerlink" href="#locale" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="problem">
+<span id="problem"></span><h2>Problem<a class="headerlink" href="#problem" title="Permalink to this headline">¶</a></h2>
+<p>원하는 target 국가의 언어로 초대메세지를 보내야 하는 상황. 문제는 target 국가에 대한 정보를 런타임에서 알 수 있는 상황. 즉, 언어를 알아낸 후 동적으로 시스템 언어를 변경시켜서 target 국가의 언어가 적용된 string resource 값을 얻어내야함!</p>
+</div>
+<div class="section" id="solution">
+<span id="solution"></span><h2>Solution<a class="headerlink" href="#solution" title="Permalink to this headline">¶</a></h2>
+<p>Locale 값을 변경하는 방법이 제일 무난해보였고, 이를 코드상에서 구현하는 것은 어렵지 않았다.</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">Locale</span> <span class="n">country</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Locale</span><span class="o">(</span><span class="n">TARGET_LANG</span><span class="o">);</span>
+    <span class="n">Configuration</span> <span class="n">config</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Configuration</span><span class="o">();</span>
+    <span class="n">config</span><span class="o">.</span><span class="na">locale</span> <span class="o">=</span> <span class="n">country</span><span class="o">;</span>
+    <span class="n">getResources</span><span class="o">().</span><span class="na">updateConfiguration</span><span class="o">(</span><span class="n">config</span><span class="o">,</span> <span class="n">getResources</span><span class="o">().</span><span class="na">getDisplayMetrics</span><span class="o">());</span>
+    
+    <span class="n">String</span> <span class="n">result</span> <span class="o">=</span> <span class="n">ResUtils</span><span class="o">.</span><span class="na">getResString</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">key</span><span class="o">);</span>
+</pre></div>
+</div>
+<p>위와 같이 target language code (ko, jp, en… etc)를 생성자에 넣어 Locale 객체를 생성하고 configuration 에 등록해주면 된다.</p>
+<p><strong>그런데,</strong> 생각하지 못한 문제가 발생했다. target 국가를 판단하기 위한 모델의 필드값이 Language code 값이 아닌 <strong>Country code</strong> 였다. 얼핏보면 무슨 차이인가 싶지만 코드에서 Locale 의 생성자 코드를 까보면 그 이유를 알 수 있다.</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="kd">public</span> <span class="nf">Locale</span><span class="o">(</span><span class="n">String</span> <span class="n">language</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">(</span><span class="n">language</span><span class="o">,</span> <span class="s">&quot;&quot;</span><span class="o">,</span> <span class="s">&quot;&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+  
+<span class="o">--&gt;</span>
+  
+<span class="kd">public</span> <span class="nf">Locale</span><span class="o">(</span><span class="n">String</span> <span class="n">language</span><span class="o">,</span> <span class="n">String</span> <span class="n">country</span><span class="o">,</span> <span class="n">String</span> <span class="n">variant</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">language</span><span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">country</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">variant</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="n">NullPointerException</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="n">baseLocale</span> <span class="o">=</span> <span class="n">BaseLocale</span><span class="o">.</span><span class="na">getInstance</span><span class="o">(</span><span class="n">convertOldISOCodes</span><span class="o">(</span><span class="n">language</span><span class="o">),</span> <span class="s">&quot;&quot;</span><span class="o">,</span> <span class="n">country</span><span class="o">,</span> <span class="n">variant</span><span class="o">);</span>
+        <span class="n">localeExtensions</span> <span class="o">=</span> <span class="n">getCompatibilityExtensions</span><span class="o">(</span><span class="n">language</span><span class="o">,</span> <span class="s">&quot;&quot;</span><span class="o">,</span> <span class="n">country</span><span class="o">,</span> <span class="n">variant</span><span class="o">);</span>
+    <span class="o">}</span>
+</pre></div>
+</div>
+<p>코드를 보면 첫번째 인자가 Language code, 두번째 인자가 Country code 라는 것과 특정 국가의 Locale 값을 정의 하기위해서는 기본적으로 Language code 값을 알고 있어야하는 것을 알 수 있다. 따라서 모델에서 얻을 수 있는 Country code 값만가지고서는 특정 국가에 대한 Locale 값을 얻을 수 없었다.</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="kd">static</span> <span class="kd">public</span> <span class="kd">final</span> <span class="n">Locale</span> <span class="n">JAPANESE</span> <span class="o">=</span> <span class="n">createConstant</span><span class="o">(</span><span class="s">&quot;ja&quot;</span><span class="o">,</span> <span class="s">&quot;&quot;</span><span class="o">);</span>
+
+<span class="kd">static</span> <span class="kd">public</span> <span class="kd">final</span> <span class="n">Locale</span> <span class="n">KOREAN</span> <span class="o">=</span> <span class="n">createConstant</span><span class="o">(</span><span class="s">&quot;ko&quot;</span><span class="o">,</span> <span class="s">&quot;&quot;</span><span class="o">);</span>
+
+<span class="kd">static</span> <span class="kd">public</span> <span class="kd">final</span> <span class="n">Locale</span> <span class="n">CHINESE</span> <span class="o">=</span> <span class="n">createConstant</span><span class="o">(</span><span class="s">&quot;zh&quot;</span><span class="o">,</span> <span class="s">&quot;&quot;</span><span class="o">);</span>
+</pre></div>
+</div>
+<p>실제로 Locale 상수로 쓰고있는 값들도 Language 값을 기본으로 생성되고 있었다.</p>
+<p>Country code 를 Languge code 인자부분에 넣는 방법도 생각했지만 애초에 포맷이 달라서 먹히지 않았다. 다른 플랫폼은 어떻게 처리를 하나 물어봤는데, 웹쪽은 애초에 Country code 를 클라이언트 쪽에서 이용하는게 아니라 서버로 넘겨주는 정보여서 크게 상관이 없었다. 모델 스펙을 섣불리 바꾸기엔 시간과 상황이 부적절했기 때문에 다른 방법을 찾아야했다.</p>
+</div>
+<div class="section" id="solution2">
+<span id="solution2"></span><h2>Solution2<a class="headerlink" href="#solution2" title="Permalink to this headline">¶</a></h2>
+<p>좋은 방법은 아니지만, Country 값에 따라 switch 로 분류하여 Locale 상수값을 할당해주는 방법을 선택했다. 이 방법도 그나마 한국, 일본을 제외한 타 국가는 영어로 전송하기로 약속을해서 가능한 것이지, 모든 언어를 대응하려면 그 수에 맞는 case 를 일일히 지정해야하므로 결코 좋은 방법이라고 할 수 없다.최종적으로 완성된 코드는 다음과 같다.</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="kd">private</span> <span class="n">String</span> <span class="nf">getChangedMessage</span><span class="o">(</span><span class="n">String</span> <span class="n">key</span><span class="o">,</span> <span class="n">String</span> <span class="n">locale</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">Locale</span> <span class="n">country</span><span class="o">;</span>
+    <span class="n">String</span> <span class="n">originLanguage</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="na">getDeviceLanguage</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+
+    <span class="k">switch</span> <span class="o">(</span><span class="n">locale</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">case</span> <span class="n">CODE_KOREA</span><span class="o">:</span>
+        <span class="n">country</span> <span class="o">=</span> <span class="n">Locale</span><span class="o">.</span><span class="na">KOREA</span><span class="o">;</span>
+        <span class="k">break</span><span class="o">;</span>
+      <span class="k">case</span> <span class="n">CODE_JAPAN</span><span class="o">:</span>
+        <span class="n">country</span> <span class="o">=</span> <span class="n">Locale</span><span class="o">.</span><span class="na">JAPAN</span><span class="o">;</span>
+        <span class="k">break</span><span class="o">;</span>
+      <span class="k">default</span><span class="o">:</span>
+        <span class="n">country</span> <span class="o">=</span> <span class="n">Locale</span><span class="o">.</span><span class="na">ENGLISH</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="n">Utils</span><span class="o">.</span><span class="na">changeSystemLanguage</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">country</span><span class="o">);</span>
+
+    <span class="n">String</span> <span class="n">changedMessage</span> <span class="o">=</span> <span class="n">ResUtils</span><span class="o">.</span><span class="na">getResString</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">key</span><span class="o">);</span>
+
+    <span class="n">Utils</span><span class="o">.</span><span class="na">changeSystemLanguage</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="k">new</span> <span class="n">Locale</span><span class="o">(</span><span class="n">originLanguage</span><span class="o">));</span>
+
+    <span class="k">return</span> <span class="n">changedMessage</span><span class="o">;</span>
+  <span class="o">}</span>
+</pre></div>
+</div>
+<p><strong>모델 스펙 잘 구성하자!</strong></p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">동적으로 시스템 언어 바꾸기 / Locale 설정</a><ul>
+<li><a class="reference internal" href="#problem">Problem</a></li>
+<li><a class="reference internal" href="#solution">Solution</a></li>
+<li><a class="reference internal" href="#solution2">Solution2</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/android/시스템 언어 변경.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Jihoon Kim.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/android/시스템 언어 변경.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

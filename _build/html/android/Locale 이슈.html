@@ -1,0 +1,113 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Locale 값 이슈 &#8212; TIL 1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="locale">
+<span id="locale"></span><h1>Locale 값 이슈<a class="headerlink" href="#locale" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="what">
+<span id="what"></span><h2>what<a class="headerlink" href="#what" title="Permalink to this headline">¶</a></h2>
+<p>디바이스에서 현재 사용하고 있는 Language 정보를 가져오기 위해 Locale 값을 이용할 때가 있다. &nbsp;
+그때 보통 일반적인 솔루션이</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">Locale</span><span class="o">.</span><span class="na">getDefault</span><span class="o">()</span>
+</pre></div>
+</div>
+<p>다음과 같이 default 메소드를 이용하는 것이다.</p>
+<p>하지만 이 방법은 한가지 문제가 존재하는데, 이렇게 가져온 Locale 값은 해당 app 이 켜졌을 때 static 하게 저장되는 값이라는 것이다. 즉, app 이 이미 구동되고 있는 상태에서 Language가 변경됐을 경우 위와 같은 방법으로 얻은 Locale 을 이용하게 되면 원하는 Language 값을 값을 얻지 못할 수 있다.</p>
+</div>
+<div class="section" id="soulution">
+<span id="soulution"></span><h2>Soulution<a class="headerlink" href="#soulution" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">Locale</span> <span class="n">current</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="na">getResources</span><span class="o">().</span><span class="na">getConfiguration</span><span class="o">().</span><span class="na">locale</span><span class="o">;</span>
+</pre></div>
+</div>
+<p>위 방법을 사용하면 중간에 Language 가 변경되었더라도 값을 올바르게 가져오게된다.<a class="reference external" href="https://stackoverflow.com/questions/14389349/android-get-current-locale-not-default">StackOverflow</a></p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Locale 값 이슈</a><ul>
+<li><a class="reference internal" href="#what">what</a></li>
+<li><a class="reference internal" href="#soulution">Soulution</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/android/Locale 이슈.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Jihoon Kim.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/android/Locale 이슈.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
